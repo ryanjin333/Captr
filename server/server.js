@@ -19,7 +19,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/chatGPT", chatGPTRouter);
+app.use("/api/v1/chatGPT", authenticateUser, chatGPTRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

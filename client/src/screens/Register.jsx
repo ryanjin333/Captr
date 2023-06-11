@@ -50,8 +50,7 @@ const Register = ({ navigation }) => {
     if (user) {
       navigation.navigate("Feed");
     }
-  }, [user, navigation]);
-
+  }, [user]);
   // fonts
   let [fontsLoaded] = useFonts({
     DMSerifDisplay_400Regular,

@@ -5,12 +5,14 @@ import axios from "axios";
 import {
   DISPLAY_ALERT,
   CLEAR_ALERT,
+  GET_USER,
   REGISTER_USER_BEGIN,
   REGISTER_USER_ERROR,
   REGISTER_USER_SUCCESS,
   LOGIN_USER_BEGIN,
   LOGIN_USER_SUCCESS,
   LOGIN_USER_ERROR,
+  LOGOUT_USER,
   SUBMIT_PROMPT_BEGIN,
   SUBMIT_PROMPT_SUCCESS,
   SUBMIT_PROMPT_ERROR,
@@ -18,16 +20,13 @@ import {
 
 import reducer from "./reducer";
 
-let token = null;
-let user = null;
-
 const initialState = {
   isLoading: false,
   showAlert: false,
   alertText: "",
   alertType: "",
-  user: user ? JSON.parse(user) : null,
-  token: token,
+  user: null,
+  token: null,
   chatResponse: "",
 };
 
@@ -39,13 +38,28 @@ const AppProvider = ({ children }) => {
   // async storage functions
   const getUserFromLocalStorage = async () => {
     try {
-      user = await AsyncStorage.getItem("user");
-      token = await AsyncStorage.getItem("token");
+      const rawUser = await AsyncStorage.getItem("user");
+      const user = rawUser ? JSON.parse(rawUser) : null;
+      const token = await AsyncStorage.getItem("token");
+      dispatch({
+        type: GET_USER,
+        payload: {
+          user,
+          token,
+        },
+      });
+      console.log(`The user is: ${user}`);
       console.log(`The user token is: ${token}`);
     } catch (error) {
       console.log("Failed to get user or token");
     }
+    clearAlert();
   };
+
+  useEffect(() => {
+    getUserFromLocalStorage();
+    console.log("called");
+  }, []);
 
   const addUserToLocalStorage = async ({ user, token }) => {
     try {
@@ -66,6 +80,36 @@ const AppProvider = ({ children }) => {
       console.log("Failed to remove user or token");
     }
   };
+
+  // axios
+  const authFetch = axios.create({
+    baseURL: "http://10.0.0.33:4040/api/v1",
+  });
+
+  // request
+  authFetch.interceptors.request.use(
+    (config) => {
+      config.headers["Authorization"] = `Bearer ${state.token}`;
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+
+  // response
+  authFetch.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+    (error) => {
+      //console.log(error.response);
+      if (error.response.status === 401) {
+        loginUser();
+      }
+      return Promise.reject(error);
+    }
+  );
 
   // app context functions
   const displayAlert = () => {
@@ -127,11 +171,16 @@ const AppProvider = ({ children }) => {
     clearAlert();
   };
 
+  const logoutUser = () => {
+    dispatch({ type: LOGOUT_USER });
+    removeUserFromLocalStorage();
+  };
+
   const submitPrompt = async (chatPrompt) => {
     dispatch({ type: SUBMIT_PROMPT_BEGIN });
     try {
-      const response = await axios.post(
-        "http://10.0.0.33:4040/api/v1/chatGPT/chatCompletion",
+      const response = await authFetch.post(
+        "/chatGPT/chatCompletion",
         chatPrompt
       );
       const { chatResponse } = response.data;
@@ -154,6 +203,7 @@ const AppProvider = ({ children }) => {
         displayAlert,
         registerUser,
         loginUser,
+        logoutUser,
         submitPrompt,
       }}
     >

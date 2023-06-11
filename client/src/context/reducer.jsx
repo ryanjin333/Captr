@@ -1,12 +1,14 @@
 import {
   DISPLAY_ALERT,
   CLEAR_ALERT,
+  GET_USER,
   REGISTER_USER_BEGIN,
   REGISTER_USER_ERROR,
   REGISTER_USER_SUCCESS,
   LOGIN_USER_BEGIN,
   LOGIN_USER_SUCCESS,
   LOGIN_USER_ERROR,
+  LOGOUT_USER,
   SUBMIT_PROMPT_BEGIN,
   SUBMIT_PROMPT_SUCCESS,
   SUBMIT_PROMPT_ERROR,
@@ -27,6 +29,14 @@ const reducer = (state, action) => {
       showAlert: false,
       alertType: "",
       alertText: "",
+    };
+  }
+
+  if (action.type === GET_USER) {
+    return {
+      ...state,
+      token: action.payload.token,
+      user: action.payload.user,
     };
   }
 
@@ -79,6 +89,16 @@ const reducer = (state, action) => {
       alertText: action.payload.msg,
     };
   }
+
+  if (action.type === LOGOUT_USER) {
+    return {
+      ...state,
+      user: null,
+      token: null,
+      chatResponse: "",
+    };
+  }
+
   if (action.type === SUBMIT_PROMPT_BEGIN) {
     return { ...state, isLoading: true };
   }

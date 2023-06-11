@@ -15,7 +15,7 @@ const Landing = ({ navigation }) => {
     if (user) {
       navigation.navigate("Feed");
     }
-  }, [user, navigation]);
+  }, [user]);
 
   // fonts
   let [fontsLoaded] = useFonts({

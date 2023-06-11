@@ -4,7 +4,9 @@ import { UnAuthenticatedError } from "../errors/index.js";
 const auth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer")) {
-    throw new UnAuthenticatedError("Authentication Invalid");
+    throw new UnAuthenticatedError(
+      "Authentication Invalid: Auth does not exist or does not start with Bearer"
+    );
   }
   const token = authHeader.split(" ")[1];
   try {
@@ -12,7 +14,9 @@ const auth = async (req, res, next) => {
     req.user = { userId: payload.userId };
     next();
   } catch (error) {
-    throw new UnAuthenticatedError("Authentication Invalid");
+    throw new UnAuthenticatedError(
+      "Authentication Invalid: Couldn't verify token"
+    );
   }
 };
 

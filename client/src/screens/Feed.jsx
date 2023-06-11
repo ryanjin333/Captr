@@ -1,22 +1,29 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Dimensions } from "react-native";
 import React, { useState } from "react";
-import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAppContext } from "../context/appContext";
 import { isLoaded, useFonts } from "expo-font";
 import { DMSerifDisplay_400Regular } from "@expo-google-fonts/dm-serif-display";
 import { DMSans_400Regular, DMSans_700Bold } from "@expo-google-fonts/dm-sans";
-import { FormRow } from "../components";
+import EStyleSheet from "react-native-extended-stylesheet";
+
+import { useAppContext } from "../context/appContext";
+import { FormRow, RoundButton } from "../components";
 
 const initialState = {
   chatPrompt: "",
   chatResponse: "",
 };
 
-const Feed = () => {
+const Feed = ({ navigation }) => {
   const [values, setValues] = useState(initialState);
-  const { user, displayAlert, submitPrompt, chatResponse, isLoading } =
-    useAppContext();
+  const {
+    user,
+    displayAlert,
+    logoutUser,
+    submitPrompt,
+    chatResponse,
+    isLoading,
+  } = useAppContext();
 
   const handleChange = (value, name) => {
     setValues({ ...values, [name]: value });
@@ -30,6 +37,11 @@ const Feed = () => {
       return;
     }
     submitPrompt({ chatPrompt });
+  };
+
+  const onLogout = () => {
+    logoutUser();
+    navigation.navigate("Landing");
   };
 
   // fonts
@@ -60,6 +72,9 @@ const Feed = () => {
             {isLoading ? "Please wait..." : "Submit"}
           </Text>
         </Pressable>
+        <Pressable onPress={onLogout} style={styles.submitButton}>
+          <Text style={styles.submitButtonText}>Logout</Text>
+        </Pressable>
         <Text style={styles.chatResponse}>{chatResponse}</Text>
       </View>
     </SafeAreaView>
@@ -68,7 +83,10 @@ const Feed = () => {
 
 export default Feed;
 
-const styles = StyleSheet.create({
+const entireScreenWidth = Dimensions.get("window").width;
+EStyleSheet.build({ $rem: entireScreenWidth / 380 });
+
+const styles = EStyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#000",
@@ -81,7 +99,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#fff",
-    fontSize: 48,
+    fontSize: "48rem",
     fontFamily: "DMSerifDisplay_400Regular",
   },
   chatContainer: {
