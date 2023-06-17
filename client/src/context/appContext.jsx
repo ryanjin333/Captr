@@ -58,7 +58,6 @@ const AppProvider = ({ children }) => {
 
   useEffect(() => {
     getUserFromLocalStorage();
-    console.log("called");
   }, []);
 
   const addUserToLocalStorage = async ({ user, token }) => {
